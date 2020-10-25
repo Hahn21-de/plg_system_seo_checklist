@@ -3,9 +3,9 @@ name: Create Joomla! Plugin install arcive
 
 on:
   push:
-    branches: [ master, next, rc ]
+    branches: [ main ]
   pull_request:
-    branches: [ master, next, rc ]
+    branches: [ main ]
 
 
 jobs:
