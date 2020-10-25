@@ -9,6 +9,7 @@
 	<authorUrl>hahn21.de</authorUrl>
 	<version>1.0.0</version>
 	<description>PLG_SYSTEM_SEO_CHECKLIST_XML_DESCRIPTION</description>
+
 	<media destination="seo_checklist" folder="media">
 		<folder>js</folder>
 	</media>
@@ -24,9 +25,11 @@
 	</languages>
 
 	<files>
+		<folder>language</folder>
 		<folder>seo_checklist</folder>
 		<filename plugin="seo_checklist">seo_checklist.php</filename>
 	</files>
+
 	<config>
 		<fields name="params">
 			<fieldset name="basic">
