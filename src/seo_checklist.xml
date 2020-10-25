@@ -26,6 +26,7 @@
 
 	<files>
 		<folder>language</folder>
+		<folder>media</folder>
 		<folder>seo_checklist</folder>
 		<filename plugin="seo_checklist">seo_checklist.php</filename>
 	</files>
