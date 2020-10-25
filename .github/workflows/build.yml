@@ -19,5 +19,5 @@ jobs:
       - name: Upload plugin artifact
         uses: actions/upload-artifact@master
         with:
-          name: GS4u_monitoring_sourcemode_plugin
+          name: plg_system_seo_checklist
           path: src/
