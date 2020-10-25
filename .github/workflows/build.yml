@@ -20,7 +20,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Build project
         run: |
-          zip -r -j plg_system_seo_checklist-${{ steps.get_version.outputs.VERSION }}.zip src/
+          cd src && zip -r -j plg_system_seo_checklist-${{ steps.get_version.outputs.VERSION }}.zip src/
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
