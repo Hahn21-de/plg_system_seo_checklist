@@ -13,11 +13,14 @@ jobs:
     name: Upload Release Asset
     runs-on: ubuntu-latest
     steps:
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
       - name: Checkout code
         uses: actions/checkout@v2
       - name: Build project
         run: |
-          zip --junk-paths plg_system_seo_checklist-${{ github.ref }} src/
+          zip -r --junk-paths plg_system_seo_checklist-${{ steps.get_version.outputs.VERSION }} src/
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -35,6 +38,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./plg_system_seo_checklist-${{ github.ref }}.zip
-          asset_name: plg_system_seo_checklist-${{ github.ref }}.zip
+          asset_path: ./plg_system_seo_checklist-${{ steps.get_version.outputs.VERSION }}.zip
+          asset_name: plg_system_seo_checklist-${{ steps.get_version.outputs.VERSION }}.zip
           asset_content_type: application/zip
