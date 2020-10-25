@@ -7,7 +7,7 @@
 	<license>GNU GENERAL PUBLIC LICENSE Version 3; see LICENSE.txt</license>
 	<authorEmail>seochecklist@hahn21.de</authorEmail>
 	<authorUrl>hahn21.de</authorUrl>
-	<version>1.0.0-RC4</version>
+	<version>1.0.0</version>
 	<description>PLG_SYSTEM_SEO_CHECKLIST_XML_DESCRIPTION</description>
 	<media destination="seo_checklist" folder="media">
 		<folder>js</folder>
