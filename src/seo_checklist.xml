@@ -12,6 +12,7 @@
 
 	<media destination="seo_checklist" folder="media">
 		<folder>js</folder>
+		<folder>css</folder>
 	</media>
 
 	<!-- Language files -->
@@ -27,7 +28,6 @@
 	<files>
 		<folder>language</folder>
 		<folder>media</folder>
-		<folder>seo_checklist</folder>
 		<filename plugin="seo_checklist">seo_checklist.php</filename>
 	</files>
 
