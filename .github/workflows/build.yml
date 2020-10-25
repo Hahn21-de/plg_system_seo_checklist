@@ -1,0 +1,23 @@
+name: Create Joomla! Plugin install arcive
+
+
+on:
+  push:
+    branches: [ master, next, rc ]
+  pull_request:
+    branches: [ master, next, rc ]
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    name: SM version ${{ matrix.sm-version }}
+    steps:
+      - uses: actions/checkout@v1
+
+      - name: Upload plugin artifact
+        uses: actions/upload-artifact@master
+        with:
+          name: GS4u_monitoring_sourcemode_plugin
+          path: src/

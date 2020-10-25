@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="3.9" type="plugin" group="system" method="upgrade">
+	<name>PLG_SYSTEM_SEO_CHECKLIST</name>
+	<author>Juri Hahn</author>
+	<creationDate>Oktober 2020</creationDate>
+	<copyright>Copyright (C) 2020 - 2020 Juri Hahn. All rights reserved.</copyright>
+	<license>GNU GENERAL PUBLIC LICENSE Version 3; see LICENSE.txt</license>
+	<authorEmail>seochecklist@hahn21.de</authorEmail>
+	<authorUrl>hahn21.de</authorUrl>
+	<version>1.0.0</version>
+	<description>PLG_SYSTEM_SEO_CHECKLIST_XML_DESCRIPTION</description>
+	<media destination="seo_checklist" folder="media">
+		<folder>js</folder>
+	</media>
+
+	<!-- Language files -->
+	<languages folder="language">
+		<language tag="en-GB">en-GB/en-GB.plg_system_seo_checklist.ini</language>
+		<language tag="en-GB">en-GB/en-GB.plg_system_seo_checklist.sys.ini</language>
+		<language tag="ru-RU">ru-RU/ru-RU.plg_system_seo_checklist.ini</language>
+		<language tag="ru-RU">ru-RU/ru-RU.plg_system_seo_checklist.sys.ini</language>
+		<language tag="de-DE">de-DE/de-DE.plg_system_seo_checklist.ini</language>
+		<language tag="de-DE">de-DE/de-DE.plg_system_seo_checklist.sys.ini</language>
+	</languages>
+
+	<files>
+		<folder>seo_checklist</folder>
+		<filename plugin="seo_checklist">seo_checklist.php</filename>
+	</files>
+	<config>
+		<fields name="params">
+			<fieldset name="basic">
+
+				<field
+						name="show_details_on_error"
+						type="list"
+						label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_SHOW_DETAILS_ON_ERROR_LABEL"
+						description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_SHOW_DETAILS_ON_ERROR_DESC"
+						default="1"
+				>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+				</field>
+
+				<field
+						name="check_generator"
+						type="list"
+						label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_GENERATOR_LABEL"
+						description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_GENERATOR_DESC"
+						default="0"
+				>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+					<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
+				</field>
+
+				<field
+						name="check_keywords"
+						type="list"
+						label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_KEYWORDS_LABEL"
+						description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_KEYWORDS_DESC"
+						default="2"
+				>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+					<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
+				</field>
+
+				<field
+						name="check_rights"
+						type="list"
+						label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_RIGHTS_LABEL"
+						description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_RIGHTS_DESC"
+						default="0"
+				>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+					<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
+				</field>
+
+			</fieldset>
+		</fields>
+	</config>
+</extension>
