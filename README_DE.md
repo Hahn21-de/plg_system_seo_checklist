@@ -3,7 +3,7 @@
 # SEO checklist - Joomla! Plugin zur schnellen Anzeige von SEO-Fehlern auf jeder Seite
 
 ## Wie wird es verwendet?
-1. installieren
+1. Herunterladen [plg_system_seo_checklist](https://github.com/Hahn21-de/plg_system_seo_checklist/releases) und installieren
 2. Öffnen Sie die Plugin-Konfiguration und setzen Sie die Zugriffsebene auf "Super Users".
 3. Aktivieren Sie das Plugin
 4. Öffnen Sie eine beliebige Seite Ihrer Website und sehen Sie sich die Fehler an, falls vorhanden
