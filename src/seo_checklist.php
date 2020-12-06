@@ -13,6 +13,12 @@ class plgSystemSeo_checklist extends CMSPlugin
 
 	public function onAfterRoute()
 	{
+		$app = Factory::getApplication();
+		if(!$app->isClient('site'))
+		{
+			return true;
+		}
+
 		$document = Factory::getDocument();
 
 		/*
