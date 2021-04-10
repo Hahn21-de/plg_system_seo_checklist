@@ -33,7 +33,8 @@ class plgSystemSeo_checklist extends CMSPlugin
 			'check_h1s'             => (int) $this->params->get('check_h1s', 1),
 			'check_generator'       => (int) $this->params->get('check_generator', 2),
 			'check_keywords'        => (int) $this->params->get('check_keywords', 2),
-			'check_rights'          => (int) $this->params->get('check_rights', 2)
+			'check_rights'          => (int) $this->params->get('check_rights', 2),
+			'check_robots'          => (int) $this->params->get('check_robots', 2)
 		);
 
 		$document->addScriptDeclaration(
