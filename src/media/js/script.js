@@ -3,18 +3,22 @@ window['SeoCheckList'] = {
 	_generator: null,
 	_keywords: null,
 	_rights: null,
+	_robots: null,
 	_title: null,
 	_h1s: null,
 	_btn: null,
 	_errors_count: 0,
+	_robots_array: [],
+	_robots_noindex: false,
+	_icon_letters: {'rights': 'C'},
 	init: function () {
 		SeoCheckList._btn = jQuery('<div>')
 			.addClass('seo_checklist_btn')
 			.on('touch click', SeoCheckList.showDetails);
 		SeoCheckList.getMetaInformation();
 		SeoCheckList.showBtn();
-		if(SeoCheckListConfig.show_details_on_error === 1) {
-			if(SeoCheckList._errors_count > 0) {
+		if (SeoCheckListConfig.show_details_on_error === 1) {
+			if (SeoCheckList._errors_count > 0) {
 				SeoCheckList.showDetails();
 			}
 		}
@@ -24,9 +28,19 @@ window['SeoCheckList'] = {
 		SeoCheckList._generator = jQuery('meta[name="generator"]').attr('content');
 		SeoCheckList._keywords = jQuery('meta[name="keywords"]').attr('content');
 		SeoCheckList._rights = jQuery('meta[name="rights"]').attr('content');
+		SeoCheckList._robots = jQuery('meta[name="robots"]').attr('content');
+		if (SeoCheckList._robots) {
+			SeoCheckList._robots_array = SeoCheckList._robots.split(',');
+			for (var i = 0; i < SeoCheckList._robots_array.length; i++) {
+				SeoCheckList._robots_array[i] = SeoCheckList._robots_array[i].trim().toLowerCase();
+				if(SeoCheckList._robots_array[i] === 'noindex') {
+					SeoCheckList._robots_noindex = true;
+				}
+			}
+		}
 		SeoCheckList._title = jQuery('title').html();
 		SeoCheckList._h1s = [];
-		jQuery('h1').each(function (index) {
+		jQuery('h1').each(function () {
 			SeoCheckList._h1s.push(jQuery(this).html());
 		});
 	},
@@ -35,7 +49,10 @@ window['SeoCheckList'] = {
 			let _er = 0;
 			let _icon_key = value_key + '_icon';
 			if (!SeoCheckList[_icon_key]) {
-				let _k = name.substr(0, 1);
+				if(!SeoCheckList._icon_letters[name.toLowerCase()]) {
+					SeoCheckList._icon_letters[name.toLowerCase()] = name.substr(0, 1);
+				}
+				let _k = SeoCheckList._icon_letters[name.toLowerCase()];
 				SeoCheckList[_icon_key] = jQuery('<div>')
 					.addClass('item')
 					.append(
@@ -48,9 +65,12 @@ window['SeoCheckList'] = {
 				if (Array.isArray(_v)) {
 					_v = _v.join('\n');
 				}
+				if (!_v) {
+					_er++;
+				}
 			} else {
 				_er++;
-				if(!error_msg) {
+				if (!error_msg) {
 					error_msg = Joomla.Text._('PLG_SYSTEM_SEO_CHECKLIST_ERROR_IS_EMPTY');
 				}
 			}
@@ -62,9 +82,11 @@ window['SeoCheckList'] = {
 				SeoCheckList[_icon_key].addClass('no_error');
 				_t = _t + _v;
 			}
-			if (SeoCheckListConfig['check' + value_key] === 2) {
-				_er = 0;
-				SeoCheckList[_icon_key].addClass('ok');
+			if (SeoCheckListConfig['check' + value_key] === 2 || SeoCheckList._robots_noindex) {
+				if (_er > 0) {
+					_er = 0;
+					SeoCheckList[_icon_key].addClass('ok');
+				}
 			}
 			SeoCheckList._errors_count += _er;
 			SeoCheckList[_icon_key].prop('title', name + ': ' + _t);
@@ -95,6 +117,9 @@ window['SeoCheckList'] = {
 	showRights: function () {
 		SeoCheckList.showIcon('Rights', '_rights');
 	},
+	showRobots: function () {
+		SeoCheckList.showIcon('Robots', '_robots');
+	},
 	showTitle: function () {
 		SeoCheckList.showIcon('Title', '_title');
 	},
@@ -104,15 +129,14 @@ window['SeoCheckList'] = {
 			_error = Joomla.Text._('PLG_SYSTEM_SEO_CHECKLIST_ERROR_H1_MULTIPLE');
 			_error = _error.replace('%s', SeoCheckList._h1s.length);
 		}
-		if (SeoCheckList._h1s.length < 1)
-		{
+		if (SeoCheckList._h1s.length < 1) {
 			_error = Joomla.Text._('PLG_SYSTEM_SEO_CHECKLIST_ERROR_NOT_FOUND');
 		}
 		SeoCheckList.showIcon('H1', '_h1s', _error);
 	},
 	showDetails: function () {
 		let _b = jQuery('.seo_checklist_btn');
-		if(_b.hasClass('details')) {
+		if (_b.hasClass('details')) {
 			_b.removeClass('details');
 		} else {
 			_b.addClass('details');
@@ -128,6 +152,7 @@ window['SeoCheckList'] = {
 		SeoCheckList.showH1();
 		SeoCheckList.showGenerator();
 		SeoCheckList.showRights();
+		SeoCheckList.showRobots();
 	}
 };
 jQuery(document).ready(function () {

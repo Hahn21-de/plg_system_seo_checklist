@@ -82,6 +82,18 @@
 					<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
 				</field>
 
+				<field
+						name="check_robots"
+						type="list"
+						label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_ROBOTS_LABEL"
+						description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_ROBOTS_DESC"
+						default="2"
+				>
+					<option value="0">JNO</option>
+					<option value="1">JYES</option>
+					<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
+				</field>
+
 			</fieldset>
 		</fields>
 	</config>
