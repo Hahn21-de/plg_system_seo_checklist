@@ -155,6 +155,13 @@ window['SeoCheckList'] = {
 		SeoCheckList.showRobots();
 	}
 };
-jQuery(document).ready(function () {
-	SeoCheckList.init();
-});
+
+function SeoCheckListInit() {
+	if (!window['jQuery']) {
+		setTimeout(SeoCheckListInit, 100);
+		return true;
+	}
+	jQuery(document).ready(function () {
+		SeoCheckList.init();
+	});
+}
