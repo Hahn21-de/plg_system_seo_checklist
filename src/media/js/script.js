@@ -165,3 +165,4 @@ function SeoCheckListInit() {
 		SeoCheckList.init();
 	});
 }
+SeoCheckListInit();
