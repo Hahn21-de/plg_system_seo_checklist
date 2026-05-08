@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<extension version="3.9" type="plugin" group="system" method="upgrade">
+<extension version="6.0" type="plugin" group="system" method="upgrade">
 	<name>PLG_SYSTEM_SEO_CHECKLIST</name>
 	<author>Juri Hahn</author>
-	<creationDate>Oktober 2020</creationDate>
-	<copyright>Copyright (C) 2020 - 2020 Juri Hahn. All rights reserved.</copyright>
+	<creationDate>October 2020</creationDate>
+	<copyright>Copyright (C) 2020 - 2026 Juri Hahn. All rights reserved.</copyright>
 	<license>GNU GENERAL PUBLIC LICENSE Version 3; see LICENSE.txt</license>
 	<authorEmail>seochecklist@hahn21.de</authorEmail>
 	<authorUrl>hahn21.de</authorUrl>
-	<version>1.0.0</version>
+	<version>2.0.0</version>
 	<description>PLG_SYSTEM_SEO_CHECKLIST_XML_DESCRIPTION</description>
 
 	<media destination="seo_checklist" folder="media">
@@ -33,7 +33,7 @@
 
 	<config>
 		<fields name="params">
-			<fieldset name="basic">
+				<fieldset name="basic">
 
 				<field
 						name="show_details_on_error"
@@ -46,10 +46,166 @@
 					<option value="1">JYES</option>
 				</field>
 
-				<field
-						name="check_generator"
-						type="list"
-						label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_GENERATOR_LABEL"
+					<field
+							name="check_title"
+							type="list"
+							label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_TITLE_LABEL"
+							description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_TITLE_DESC"
+							default="1"
+					>
+						<option value="0">JNO</option>
+						<option value="1">JYES</option>
+						<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
+					</field>
+
+					<field
+							name="check_description"
+							type="list"
+							label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_DESCRIPTION_LABEL"
+							description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_DESCRIPTION_DESC"
+							default="1"
+					>
+						<option value="0">JNO</option>
+						<option value="1">JYES</option>
+						<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
+					</field>
+
+					<field
+							name="check_h1s"
+							type="list"
+							label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_H1S_LABEL"
+							description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_H1S_DESC"
+							default="1"
+					>
+						<option value="0">JNO</option>
+						<option value="1">JYES</option>
+						<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
+					</field>
+
+					<field
+							name="check_headings"
+							type="list"
+							label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_HEADINGS_LABEL"
+							description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_HEADINGS_DESC"
+							default="1"
+					>
+						<option value="0">JNO</option>
+						<option value="1">JYES</option>
+						<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
+					</field>
+
+					<field
+							name="check_canonical"
+							type="list"
+							label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_CANONICAL_LABEL"
+							description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_CANONICAL_DESC"
+							default="1"
+					>
+						<option value="0">JNO</option>
+						<option value="1">JYES</option>
+						<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
+					</field>
+
+					<field
+							name="check_hreflang"
+							type="list"
+							label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_HREFLANG_LABEL"
+							description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_HREFLANG_DESC"
+							default="1"
+					>
+						<option value="0">JNO</option>
+						<option value="1">JYES</option>
+						<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
+					</field>
+
+					<field
+							name="check_html_lang"
+							type="list"
+							label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_HTML_LANG_LABEL"
+							description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_HTML_LANG_DESC"
+							default="1"
+					>
+						<option value="0">JNO</option>
+						<option value="1">JYES</option>
+						<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
+					</field>
+
+					<field
+							name="check_viewport"
+							type="list"
+							label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_VIEWPORT_LABEL"
+							description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_VIEWPORT_DESC"
+							default="1"
+					>
+						<option value="0">JNO</option>
+						<option value="1">JYES</option>
+						<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
+					</field>
+
+					<field
+							name="check_open_graph"
+							type="list"
+							label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_OPEN_GRAPH_LABEL"
+							description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_OPEN_GRAPH_DESC"
+							default="1"
+					>
+						<option value="0">JNO</option>
+						<option value="1">JYES</option>
+						<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
+					</field>
+
+					<field
+							name="check_twitter"
+							type="list"
+							label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_TWITTER_LABEL"
+							description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_TWITTER_DESC"
+							default="2"
+					>
+						<option value="0">JNO</option>
+						<option value="1">JYES</option>
+						<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
+					</field>
+
+					<field
+							name="check_structured_data"
+							type="list"
+							label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_STRUCTURED_DATA_LABEL"
+							description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_STRUCTURED_DATA_DESC"
+							default="2"
+					>
+						<option value="0">JNO</option>
+						<option value="1">JYES</option>
+						<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
+					</field>
+
+					<field
+							name="check_images"
+							type="list"
+							label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_IMAGES_LABEL"
+							description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_IMAGES_DESC"
+							default="1"
+					>
+						<option value="0">JNO</option>
+						<option value="1">JYES</option>
+						<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
+					</field>
+
+					<field
+							name="check_links"
+							type="list"
+							label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_LINKS_LABEL"
+							description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_LINKS_DESC"
+							default="1"
+					>
+						<option value="0">JNO</option>
+						<option value="1">JYES</option>
+						<option value="2">PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_JUST_SHOW</option>
+					</field>
+
+					<field
+							name="check_generator"
+							type="list"
+							label="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_GENERATOR_LABEL"
 						description="PLG_SYSTEM_SEO_CHECKLIST_OPTIONS_CHECK_GENERATOR_DESC"
 						default="0"
 				>

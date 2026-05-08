@@ -1,80 +1,191 @@
-.seo_checklist_btn {
+.seo-checklist {
   position: fixed;
-  top: 0;
-  right: 0;
-  width: 25px;
-  background-color: rgba(0, 0, 0, 0);
-  padding: 5px;
-  color: #999999;
-  transition-duration: 0.5s;
-  transition-property: width, background-color, border;
-  transition-timing-function: ease-in-out;
+  z-index: 2147483000;
+  top: 12px;
+  right: 12px;
+  width: 72px;
+  max-width: calc(100vw - 24px);
+  color: #eef2f8;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 13px;
+  line-height: 1.4;
+  text-align: left;
 }
 
-.seo_checklist_btn.details {
-  width: 800px;
-  max-width: 95%;
-  background-color: rgba(0, 0, 0, 0.8);
-  border: 1px solid #444;
-  max-height: 90%;
-  overflow-y: auto;
+.seo-checklist,
+.seo-checklist * {
+  box-sizing: border-box;
 }
 
-.seo_checklist_btn .item {
+.seo-checklist__toggle {
+  display: grid;
+  grid-template-columns: 32px 1fr auto;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: 38px;
+  padding: 3px;
   color: #ffffff;
+  background: rgba(16, 21, 30, 0.94);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 7px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+  cursor: pointer;
 }
 
-.seo_checklist_btn.details .item {
-  padding-bottom: 5px;
-}
-
-.seo_checklist_btn .item.no_error,
-.seo_checklist_btn .item.ok {
-  color: #999999;
-}
-
-.seo_checklist_btn .icon {
-  display: inline-block;
-  width: 16px;
-  height: 16px;
-  border-radius: 9px;
-  background-color: #ff0000;
-  border: #aa0000 solid 1px;
-  cursor: help;
+.seo-checklist__score {
+  display: inline-grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  color: #ffffff;
+  background: #238636;
+  border-radius: 50%;
+  font-weight: 700;
   font-size: 12px;
-  line-height: 16px;
-  text-align: center;
-  vertical-align: top;
 }
 
-.seo_checklist_btn .item.no_error .icon {
-  background-color: #006600;
-  border: #00aa00 solid 1px;
-  color: #999999;
+.seo-checklist[data-status="warning"] .seo-checklist__score {
+  background: #b7791f;
 }
 
-.seo_checklist_btn .item.ok .icon {
-  background-color: #5555ff;
-  border: #222266 solid 1px;
-  color: #999999;
+.seo-checklist[data-status="error"] .seo-checklist__score {
+  background: #c7362f;
 }
 
-.seo_checklist_btn .info {
+.seo-checklist__title,
+.seo-checklist__counter,
+.seo-checklist__body {
   display: none;
-  width: calc(100% - 30px);
-  padding-left: 5px;
 }
 
-.seo_checklist_btn.details .info {
-  display: inline-block;
+.seo-checklist--open {
+  width: 720px;
 }
 
-.seo_checklist_btn .item .info .title {
-  font-weight: bolder;
-  color: #FFFFFF;
+.seo-checklist--open .seo-checklist__title,
+.seo-checklist--open .seo-checklist__counter,
+.seo-checklist--open .seo-checklist__body {
+  display: block;
 }
 
-.seo_checklist_btn .item.no_error .info .title,
-.seo_checklist_btn .item.ok .info .title {
-  color: #BBBBBB;
+.seo-checklist__title {
+  overflow: hidden;
+  color: #f8fafc;
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.seo-checklist__counter {
+  padding-right: 8px;
+  color: #cbd5e1;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.seo-checklist__body {
+  margin-top: 8px;
+  max-height: calc(100vh - 68px);
+  overflow: auto;
+  padding: 10px;
+  background: rgba(16, 21, 30, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 7px;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+}
+
+.seo-checklist__hint {
+  margin: 0 0 8px;
+  color: #94a3b8;
+  font-size: 12px;
+}
+
+.seo-checklist__item {
+  margin: 0;
+  padding: 10px 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.seo-checklist__item:first-of-type {
+  border-top: 0;
+}
+
+.seo-checklist__item-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.seo-checklist__item-status {
+  display: inline-flex;
+  align-items: center;
+  min-width: 58px;
+  color: #a7f3d0;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.seo-checklist__item--warning .seo-checklist__item-status {
+  color: #facc15;
+}
+
+.seo-checklist__item--error .seo-checklist__item-status {
+  color: #f87171;
+}
+
+.seo-checklist__item--info .seo-checklist__item-status {
+  color: #93c5fd;
+}
+
+.seo-checklist__item-title {
+  overflow: hidden;
+  color: #ffffff;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.seo-checklist__item-value,
+.seo-checklist__item-details {
+  overflow: auto;
+  margin: 6px 0 0;
+  padding: 7px 8px;
+  color: #dbeafe;
+  background: rgba(15, 23, 42, 0.72);
+  border-radius: 5px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.seo-checklist__item-details {
+  color: #fecaca;
+  background: rgba(127, 29, 29, 0.28);
+}
+
+.seo-checklist__item--warning .seo-checklist__item-details {
+  color: #fde68a;
+  background: rgba(113, 63, 18, 0.3);
+}
+
+.seo-checklist__item--info .seo-checklist__item-details {
+  color: #bfdbfe;
+  background: rgba(30, 64, 175, 0.28);
+}
+
+@media (max-width: 760px) {
+  .seo-checklist {
+    top: 8px;
+    right: 8px;
+    width: 64px;
+    max-width: calc(100vw - 16px);
+  }
+
+  .seo-checklist--open {
+    width: calc(100vw - 16px);
+  }
 }
