@@ -677,6 +677,99 @@
 		});
 	}
 
+	function structuredDataDisplayValue(value, preferName) {
+		if (Array.isArray(value)) {
+			for (const entry of value) {
+				const resolved = structuredDataDisplayValue(entry, preferName);
+
+				if (resolved) {
+					return resolved;
+				}
+			}
+
+			return '';
+		}
+
+		if (value && typeof value === 'object' && preferName) {
+			return text(value.name || value.url || value.contentUrl || value['@id']);
+		}
+
+		return structuredDataValue(value);
+	}
+
+	function shortStructuredDataValue(value, maxLength, preferName) {
+		const result = structuredDataDisplayValue(value, preferName);
+		const limit = maxLength || 180;
+
+		if (result.length <= limit) {
+			return result;
+		}
+
+		return result.slice(0, limit - 1).trim() + '…';
+	}
+
+	function addStructuredDataLine(lines, labelName, value, maxLength, preferName) {
+		const result = shortStructuredDataValue(value, maxLength, preferName);
+
+		if (result) {
+			lines.push(labelName + ': ' + result);
+		}
+	}
+
+	function structuredDataItemLabel(item, index) {
+		const types = schemaTypes(item);
+
+		return '[' + (types.length ? types.join(', ') : 'JSON-LD') + ' #' + (index + 1) + ']';
+	}
+
+	function summarizeBreadcrumbList(item, lines) {
+		const elements = Array.isArray(item.itemListElement) ? item.itemListElement : [];
+		const trail = elements
+			.map((entry) => {
+				const source = entry && entry.item ? entry.item : entry;
+
+				return shortStructuredDataValue(source && source.name ? source.name : entry && entry.name, 80);
+			})
+			.filter(Boolean);
+
+		if (trail.length) {
+			lines.push('items: ' + trail.join(' > '));
+		}
+	}
+
+	function summarizeStructuredDataItem(item, index) {
+		const types = schemaTypes(item);
+		const lines = [structuredDataItemLabel(item, index)];
+
+		addStructuredDataLine(lines, '@id', item['@id'], 220);
+		addStructuredDataLine(lines, 'name', item.name, 180);
+		addStructuredDataLine(lines, 'headline', item.headline, 180);
+		addStructuredDataLine(lines, 'url', item.url, 220);
+		addStructuredDataLine(lines, 'description', item.description, 220);
+		addStructuredDataLine(lines, 'inLanguage', item.inLanguage, 80);
+		addStructuredDataLine(lines, 'logo', item.logo, 220);
+		addStructuredDataLine(lines, 'image', item.image || item.thumbnailUrl || item.primaryImageOfPage, 220);
+		addStructuredDataLine(lines, 'publisher', item.publisher, 220);
+		addStructuredDataLine(lines, 'author', item.author, 180, true);
+		addStructuredDataLine(lines, 'isPartOf', item.isPartOf, 220);
+		addStructuredDataLine(lines, 'mainEntityOfPage', item.mainEntityOfPage, 220);
+		addStructuredDataLine(lines, 'datePublished', item.datePublished, 80);
+		addStructuredDataLine(lines, 'dateModified', item.dateModified, 80);
+
+		if (types.includes('BreadcrumbList')) {
+			summarizeBreadcrumbList(item, lines);
+		}
+
+		return lines.join('\n');
+	}
+
+	function structuredDataSummary(items) {
+		return items
+			.map((item, index) => summarizeStructuredDataItem(item, index))
+			.filter(Boolean)
+			.join('\n\n');
+	}
+
 	function requireStructuredDataField(item, field, labelName, messages) {
 		const value = structuredDataValue(item[field]);
 
@@ -943,8 +1036,9 @@
 			label('STRUCTURED_DATA', 'Structured data'),
 			status,
 			[
-				'JSON-LD blocks: ' + nodes.length,
-				'Types: ' + Array.from(new Set(types)).join(', '),
+				message('STRUCTURED_DATA_BLOCKS', 'JSON-LD blocks: %s', [nodes.length]),
+				message('STRUCTURED_DATA_TYPES', 'Types: %s', [Array.from(new Set(types)).join(', ')]),
+				structuredDataSummary(items),
 			].join('\n'),
 			messages.join('\n')
 		);
