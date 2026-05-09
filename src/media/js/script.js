@@ -88,6 +88,48 @@
 		return nodes.length ? text(nodes[0].getAttribute('content')) : '';
 	}
 
+	function mergeStatus(current, next) {
+		if (current === STATUS.error || next === STATUS.error) {
+			return STATUS.error;
+		}
+
+		if (current === STATUS.warning || next === STATUS.warning) {
+			return STATUS.warning;
+		}
+
+		if (current === STATUS.info || next === STATUS.info) {
+			return STATUS.info;
+		}
+
+		return STATUS.ok;
+	}
+
+	function metaNamesByAttribute(prefix, attribute) {
+		return queryAll('head meta[' + attribute + '^="' + prefix + '"]')
+			.map((node) => text(node.getAttribute(attribute)))
+			.filter(Boolean);
+	}
+
+	function validateAbsoluteMetaUrl(field, value, messages) {
+		if (!value) {
+			return STATUS.ok;
+		}
+
+		const target = parseUrl(value);
+
+		if (!target) {
+			messages.push(message('SOCIAL_URL_INVALID', '%s URL is invalid.', [field]));
+			return STATUS.error;
+		}
+
+		if (!/^https?:\/\//i.test(value)) {
+			messages.push(message('SOCIAL_URL_ABSOLUTE', '%s must be an absolute URL.', [field]));
+			return STATUS.warning;
+		}
+
+		return STATUS.ok;
+	}
+
 	function visible(element) {
 		if (!element) {
 			return false;
@@ -475,9 +517,10 @@
 	}
 
 	function checkOpenGraph() {
-		const required = ['og:title', 'og:description', 'og:url', 'og:type'];
+		const required = ['og:title', 'og:description', 'og:url', 'og:type', 'og:image'];
 		const values = [];
 		const missing = [];
+		const messages = [];
 		let status = STATUS.ok;
 
 		required.forEach((property) => {
@@ -492,15 +535,53 @@
 
 		if (missing.length) {
 			status = STATUS.warning;
+			messages.push(message('MISSING_FIELDS', 'Missing: %s', [missing.join(', ')]));
 		}
 
-		addCheck('open_graph', label('OPEN_GRAPH', 'Open Graph'), status, values.join('\n'), missing.length ? message('MISSING_FIELDS', 'Missing: %s', [missing.join(', ')]) : '');
+		const wrongAttribute = metaNamesByAttribute('og:', 'name');
+		if (wrongAttribute.length) {
+			status = STATUS.error;
+			messages.push(message('OPEN_GRAPH_WRONG_ATTRIBUTE', 'Open Graph meta tags must use property, not name: %s', [wrongAttribute.join(', ')]));
+		}
+
+		const ogUrl = metaContent(metaByProperty('og:url'));
+		const ogImage = metaContent(metaByProperty('og:image'));
+		const ogImageWidth = metaContent(metaByProperty('og:image:width'));
+		const ogImageHeight = metaContent(metaByProperty('og:image:height'));
+
+		status = mergeStatus(status, validateAbsoluteMetaUrl('og:url', ogUrl, messages));
+		status = mergeStatus(status, validateAbsoluteMetaUrl('og:image', ogImage, messages));
+
+		if (ogImageWidth) {
+			values.push('og:image:width: ' + ogImageWidth);
+		}
+		if (ogImageHeight) {
+			values.push('og:image:height: ' + ogImageHeight);
+		}
+
+		if (ogImage && (!ogImageWidth || !ogImageHeight)) {
+			status = mergeStatus(status, STATUS.warning);
+			messages.push(message('SOCIAL_IMAGE_SIZE_MISSING', 'og:image:width and og:image:height should be present.'));
+		}
+
+		[
+			['og:image:width', ogImageWidth],
+			['og:image:height', ogImageHeight],
+		].forEach(([field, value]) => {
+			if (value && (!/^\d+$/.test(value) || Number(value) < 100)) {
+				status = mergeStatus(status, STATUS.warning);
+				messages.push(message('SOCIAL_IMAGE_SIZE_INVALID', '%s should be a number of at least 100.', [field]));
+			}
+		});
+
+		addCheck('open_graph', label('OPEN_GRAPH', 'Open Graph'), status, values.join('\n'), messages.join('\n'));
 	}
 
 	function checkTwitter() {
-		const required = ['twitter:card', 'twitter:title', 'twitter:description'];
+		const required = ['twitter:card', 'twitter:title', 'twitter:description', 'twitter:url', 'twitter:image'];
 		const values = [];
 		const missing = [];
+		const messages = [];
 		let status = STATUS.ok;
 
 		required.forEach((name) => {
@@ -515,9 +596,25 @@
 
 		if (missing.length) {
 			status = STATUS.warning;
+			messages.push(message('MISSING_FIELDS', 'Missing: %s', [missing.join(', ')]));
 		}
 
-		addCheck('twitter', label('TWITTER', 'Twitter Card'), status, values.join('\n'), missing.length ? message('MISSING_FIELDS', 'Missing: %s', [missing.join(', ')]) : '');
+		const wrongAttribute = metaNamesByAttribute('twitter:', 'property');
+		if (wrongAttribute.length) {
+			status = STATUS.error;
+			messages.push(message('TWITTER_WRONG_ATTRIBUTE', 'Twitter Card meta tags must use name, not property: %s', [wrongAttribute.join(', ')]));
+		}
+
+		const twitterCard = metaContent(metaByName('twitter:card'));
+		if (twitterCard && !['summary', 'summary_large_image'].includes(twitterCard)) {
+			status = mergeStatus(status, STATUS.warning);
+			messages.push(message('TWITTER_CARD_INVALID', 'twitter:card should be summary or summary_large_image.'));
+		}
+
+		status = mergeStatus(status, validateAbsoluteMetaUrl('twitter:url', metaContent(metaByName('twitter:url')), messages));
+		status = mergeStatus(status, validateAbsoluteMetaUrl('twitter:image', metaContent(metaByName('twitter:image')), messages));
+
+		addCheck('twitter', label('TWITTER', 'Twitter Card'), status, values.join('\n'), messages.join('\n'));
 	}
 
 	function checkStructuredData() {
