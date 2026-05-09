@@ -331,26 +331,26 @@
 		const h1s = queryAll('h1').filter(visible);
 		const values = h1s.map((node) => text(node.textContent));
 		let status = STATUS.ok;
-		let message = '';
+		let details = '';
 
 		if (h1s.length > 1) {
 			status = STATUS.error;
-			message = translate('PLG_SYSTEM_SEO_CHECKLIST_ERROR_H1_MULTIPLE', 'Multiple (%s) H1 tags!').replace('%s', h1s.length);
+			details = translate('PLG_SYSTEM_SEO_CHECKLIST_ERROR_H1_MULTIPLE', 'Multiple (%s) H1 tags!').replace('%s', h1s.length);
 		}
 
 		if (h1s.length < 1) {
 			status = STATUS.error;
-			message = translate('PLG_SYSTEM_SEO_CHECKLIST_ERROR_NOT_FOUND', 'Not found!');
+			details = translate('PLG_SYSTEM_SEO_CHECKLIST_ERROR_NOT_FOUND', 'Not found!');
 		}
 
 		values.forEach((value) => {
 			if (value.length > 90) {
 				status = status === STATUS.error ? status : STATUS.warning;
-				message += (message ? '\n' : '') + message('H1_LONG', 'H1 is very long.');
+				details += (details ? '\n' : '') + message('H1_LONG', 'H1 is very long.');
 			}
 		});
 
-		addCheck('h1s', label('H1', 'H1'), status, listValue(values), message);
+		addCheck('h1s', label('H1', 'H1'), status, listValue(values), details);
 	}
 
 	function checkHeadings() {
@@ -617,33 +617,337 @@
 		addCheck('twitter', label('TWITTER', 'Twitter Card'), status, values.join('\n'), messages.join('\n'));
 	}
 
+	function schemaTypes(item) {
+		const value = item && item['@type'];
+
+		if (Array.isArray(value)) {
+			return value.map((type) => text(type)).filter(Boolean);
+		}
+
+		return value ? [text(value)] : [];
+	}
+
+	function collectStructuredDataItems(value, items) {
+		if (Array.isArray(value)) {
+			value.forEach((entry) => collectStructuredDataItems(entry, items));
+
+			return items;
+		}
+
+		if (!value || typeof value !== 'object') {
+			return items;
+		}
+
+		if (value['@type']) {
+			items.push(value);
+		}
+
+		if (Array.isArray(value['@graph'])) {
+			collectStructuredDataItems(value['@graph'], items);
+		}
+
+		return items;
+	}
+
+	function structuredDataValue(value) {
+		if (Array.isArray(value)) {
+			for (const entry of value) {
+				const resolved = structuredDataValue(entry);
+
+				if (resolved) {
+					return resolved;
+				}
+			}
+
+			return '';
+		}
+
+		if (value && typeof value === 'object') {
+			return text(value.url || value.contentUrl || value['@id'] || value.name);
+		}
+
+		return text(value);
+	}
+
+	function structuredDataItemsByType(items, acceptedTypes) {
+		return items.filter((item) => {
+			const types = schemaTypes(item);
+
+			return acceptedTypes.some((type) => types.includes(type));
+		});
+	}
+
+	function requireStructuredDataField(item, field, labelName, messages) {
+		const value = structuredDataValue(item[field]);
+
+		if (!value) {
+			messages.push(message('STRUCTURED_DATA_FIELD_MISSING', 'Structured data field is missing: %s', [labelName]));
+			return '';
+		}
+
+		return value;
+	}
+
+	function validateStructuredDataUrl(labelName, value, messages) {
+		const url = structuredDataValue(value);
+
+		if (!url) {
+			messages.push(message('STRUCTURED_DATA_FIELD_MISSING', 'Structured data field is missing: %s', [labelName]));
+			return STATUS.warning;
+		}
+
+		const target = parseUrl(url);
+
+		if (!target) {
+			messages.push(message('STRUCTURED_DATA_URL_INVALID', 'Structured data URL is invalid: %s', [labelName]));
+			return STATUS.error;
+		}
+
+		if (!/^https?:\/\//i.test(url)) {
+			messages.push(message('STRUCTURED_DATA_URL_ABSOLUTE', 'Structured data URL should be absolute: %s', [labelName]));
+			return STATUS.warning;
+		}
+
+		return STATUS.ok;
+	}
+
+	function canonicalHref() {
+		const node = queryAll('link[rel~="canonical"]')[0];
+
+		return node ? text(node.getAttribute('href')) : '';
+	}
+
+	function sameUrlPath(left, right) {
+		const leftUrl = parseUrl(left);
+		const rightUrl = parseUrl(right);
+
+		if (!leftUrl || !rightUrl) {
+			return false;
+		}
+
+		return leftUrl.pathname.replace(/\/$/, '') === rightUrl.pathname.replace(/\/$/, '');
+	}
+
+	function hasVisibleBreadcrumb() {
+		return queryAll('.breadcrumb, .mod-breadcrumbs').some(visible);
+	}
+
+	function addMissingStructuredDataType(typeName, messages) {
+		messages.push(message('STRUCTURED_DATA_TYPE_MISSING', 'Structured data type is missing: %s', [typeName]));
+	}
+
+	function validateBreadcrumbList(items, messages) {
+		const breadcrumbItems = structuredDataItemsByType(items, ['BreadcrumbList']);
+
+		if (!breadcrumbItems.length) {
+			if (hasVisibleBreadcrumb()) {
+				addMissingStructuredDataType('BreadcrumbList', messages);
+				return STATUS.warning;
+			}
+
+			return STATUS.ok;
+		}
+
+		let status = STATUS.ok;
+
+		breadcrumbItems.forEach((breadcrumb) => {
+			const elements = Array.isArray(breadcrumb.itemListElement)
+				? breadcrumb.itemListElement
+				: [];
+
+			if (!elements.length) {
+				messages.push(message('STRUCTURED_DATA_BREADCRUMB_EMPTY', 'BreadcrumbList has no itemListElement entries.'));
+				status = mergeStatus(status, STATUS.warning);
+				return;
+			}
+
+			elements.forEach((entry, index) => {
+				const position = Number(entry && entry.position);
+				const item = entry && entry.item;
+				const itemName = structuredDataValue(item && item.name ? item.name : entry && entry.name);
+				const itemUrl = structuredDataValue(item && (item['@id'] || item.url));
+
+				if (position !== index + 1 || !itemName) {
+					messages.push(message('STRUCTURED_DATA_BREADCRUMB_ITEM', 'BreadcrumbList item #%s is incomplete.', [index + 1]));
+					status = mergeStatus(status, STATUS.warning);
+				}
+
+				if (itemUrl) {
+					status = mergeStatus(status, validateStructuredDataUrl('BreadcrumbList item #' + (index + 1), itemUrl, messages));
+				} else if (index < elements.length - 1) {
+					messages.push(message('STRUCTURED_DATA_BREADCRUMB_ITEM_URL', 'BreadcrumbList item #%s should have a URL.', [index + 1]));
+					status = mergeStatus(status, STATUS.warning);
+				}
+			});
+		});
+
+		return status;
+	}
+
+	function validateStructuredDataGraph(items, messages) {
+		let status = STATUS.ok;
+		const canonical = canonicalHref() || (config.current_url || window.location.href);
+		const htmlLang = text(document.documentElement.getAttribute('lang')).replace('_', '-').toLowerCase();
+		const webPageItems = structuredDataItemsByType(items, ['WebPage']);
+		const webSiteItems = structuredDataItemsByType(items, ['WebSite']);
+		const organizationItems = structuredDataItemsByType(items, ['Organization']);
+		const articleItems = structuredDataItemsByType(items, ['Article', 'BlogPosting', 'NewsArticle']);
+		const isArticlePage = document.body && document.body.classList.contains('view-article');
+
+		if (!items.length) {
+			messages.push(message('STRUCTURED_DATA_NO_TYPES', 'JSON-LD has no recognized @type.'));
+			return STATUS.warning;
+		}
+
+		if (!webPageItems.length) {
+			addMissingStructuredDataType('WebPage', messages);
+			status = mergeStatus(status, STATUS.warning);
+		} else {
+			const webPage = webPageItems[0];
+			const webPageUrl = requireStructuredDataField(webPage, 'url', 'WebPage.url', messages);
+
+			requireStructuredDataField(webPage, 'name', 'WebPage.name', messages);
+			requireStructuredDataField(webPage, 'description', 'WebPage.description', messages);
+			status = mergeStatus(status, validateStructuredDataUrl('WebPage.url', webPageUrl, messages));
+
+			if (canonical && webPageUrl && !sameUrlPath(webPageUrl, canonical)) {
+				messages.push(message('STRUCTURED_DATA_WEBPAGE_CANONICAL', 'WebPage.url should match the canonical URL.'));
+				status = mergeStatus(status, STATUS.warning);
+			}
+
+			const inLanguage = structuredDataValue(webPage.inLanguage).replace('_', '-').toLowerCase();
+
+			if (htmlLang && inLanguage && inLanguage !== htmlLang) {
+				messages.push(message('STRUCTURED_DATA_LANGUAGE_MISMATCH', 'WebPage.inLanguage differs from HTML lang.'));
+				status = mergeStatus(status, STATUS.warning);
+			}
+		}
+
+		if (!webSiteItems.length) {
+			addMissingStructuredDataType('WebSite', messages);
+			status = mergeStatus(status, STATUS.warning);
+		} else {
+			const webSite = webSiteItems[0];
+
+			requireStructuredDataField(webSite, 'name', 'WebSite.name', messages);
+			status = mergeStatus(status, validateStructuredDataUrl('WebSite.url', webSite.url, messages));
+
+			if (!webSite.publisher) {
+				messages.push(message('STRUCTURED_DATA_FIELD_MISSING', 'Structured data field is missing: %s', ['WebSite.publisher']));
+				status = mergeStatus(status, STATUS.warning);
+			}
+		}
+
+		if (!organizationItems.length) {
+			addMissingStructuredDataType('Organization', messages);
+			status = mergeStatus(status, STATUS.warning);
+		} else {
+			const organization = organizationItems[0];
+
+			requireStructuredDataField(organization, 'name', 'Organization.name', messages);
+			status = mergeStatus(status, validateStructuredDataUrl('Organization.url', organization.url, messages));
+
+			if (!organization.logo) {
+				messages.push(message('STRUCTURED_DATA_FIELD_MISSING', 'Structured data field is missing: %s', ['Organization.logo']));
+				status = mergeStatus(status, STATUS.warning);
+			}
+		}
+
+		status = mergeStatus(status, validateBreadcrumbList(items, messages));
+
+		if (isArticlePage && !articleItems.length) {
+			addMissingStructuredDataType('Article / BlogPosting / NewsArticle', messages);
+			status = mergeStatus(status, STATUS.warning);
+		}
+
+		articleItems.forEach((article) => {
+			const headline = requireStructuredDataField(article, 'headline', 'Article.headline', messages);
+
+			if (headline && headline.length > 110) {
+				messages.push(message('STRUCTURED_DATA_HEADLINE_LONG', 'Article.headline is longer than 110 characters.'));
+				status = mergeStatus(status, STATUS.warning);
+			}
+
+			requireStructuredDataField(article, 'author', 'Article.author', messages);
+			status = mergeStatus(status, validateStructuredDataUrl('Article.image', article.image || article.thumbnailUrl, messages));
+
+			if (!article.datePublished) {
+				messages.push(message('STRUCTURED_DATA_FIELD_MISSING', 'Structured data field is missing: %s', ['Article.datePublished']));
+				status = mergeStatus(status, STATUS.warning);
+			}
+
+			if (!article.dateModified) {
+				messages.push(message('STRUCTURED_DATA_FIELD_MISSING', 'Structured data field is missing: %s', ['Article.dateModified']));
+				status = mergeStatus(status, STATUS.warning);
+			}
+
+			if (!article.publisher) {
+				messages.push(message('STRUCTURED_DATA_FIELD_MISSING', 'Structured data field is missing: %s', ['Article.publisher']));
+				status = mergeStatus(status, STATUS.warning);
+			}
+
+			if (!article.mainEntityOfPage) {
+				messages.push(message('STRUCTURED_DATA_FIELD_MISSING', 'Structured data field is missing: %s', ['Article.mainEntityOfPage']));
+				status = mergeStatus(status, STATUS.warning);
+			}
+		});
+
+		return status;
+	}
+
 	function checkStructuredData() {
-		const nodes = queryAll('script[type="application/ld+json"]');
+		const nodes = queryAll('script[type^="application/ld+json"]');
 		const types = [];
 		const messages = [];
-		let status = nodes.length ? STATUS.ok : STATUS.info;
+		const items = [];
+		let status = nodes.length ? STATUS.ok : STATUS.warning;
 
 		if (!nodes.length) {
 			messages.push(message('STRUCTURED_DATA_MISSING', 'No JSON-LD structured data found.'));
 		}
 
 		nodes.forEach((node, index) => {
+			const json = text(node.textContent);
+
+			if (!json) {
+				status = STATUS.error;
+				messages.push(message('STRUCTURED_DATA_INVALID', 'Invalid JSON-LD block #%s: %s', [index + 1, 'empty script']));
+				return;
+			}
+
 			try {
 				const parsed = JSON.parse(node.textContent);
-				const items = Array.isArray(parsed) ? parsed : [parsed];
+				const parsedItems = collectStructuredDataItems(parsed, []);
 
-				items.forEach((item) => {
-					if (item && item['@type']) {
-						types.push(String(item['@type']));
-					}
+				parsedItems.forEach((item) => {
+					items.push(item);
+					schemaTypes(item).forEach((type) => types.push(type));
 				});
+
+				if (parsed && typeof parsed === 'object' && !parsed['@context']) {
+					status = mergeStatus(status, STATUS.warning);
+					messages.push(message('STRUCTURED_DATA_CONTEXT_MISSING', 'JSON-LD block #%s has no @context.', [index + 1]));
+				}
 			} catch (error) {
 				status = STATUS.error;
 				messages.push(message('STRUCTURED_DATA_INVALID', 'Invalid JSON-LD block #%s: %s', [index + 1, error.message]));
 			}
 		});
 
-		addCheck('structured_data', label('STRUCTURED_DATA', 'Structured data'), status, types.join(', '), messages.join('\n'));
+		if (nodes.length) {
+			status = mergeStatus(status, validateStructuredDataGraph(items, messages));
+		}
+
+		addCheck(
+			'structured_data',
+			label('STRUCTURED_DATA', 'Structured data'),
+			status,
+			[
+				'JSON-LD blocks: ' + nodes.length,
+				'Types: ' + Array.from(new Set(types)).join(', '),
+			].join('\n'),
+			messages.join('\n')
+		);
 	}
 
 	function checkImages() {
